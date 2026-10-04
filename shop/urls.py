@@ -15,5 +15,11 @@ urlpatterns = [
     path("cart/remove/<int:pk>/", views.cart_remove, name="cart_remove"),
     path("checkout/", views.checkout, name="checkout"),
     path("order/<str:number>/", views.order_confirmation, name="order_confirmation"),
+    path("subscribe/weekly-box/", views.subscribe_weekly_box, name="subscribe_weekly_box"),
+    path(
+        "subscribe/confirmed/",
+        views.subscription_confirmation,
+        name="subscription_confirmation",
+    ),
     path("stripe/webhook/", views.stripe_webhook, name="stripe_webhook"),
 ]

@@ -15,9 +15,13 @@ from .cart import (
     remove_from_cart,
     set_quantity,
 )
-from .forms import CheckoutForm, ContactForm
-from .models import Order, OrderItem, Product
-from .stripe_utils import create_checkout_session, event_from_request
+from .forms import CheckoutForm, ContactForm, SubscriptionForm
+from .models import Order, OrderItem, Product, Subscription
+from .stripe_utils import (
+    create_checkout_session,
+    create_subscription_checkout_session,
+    event_from_request,
+)
 
 
 # ---------------------------------------------------------------------------
@@ -205,6 +209,120 @@ def order_confirmation(request, number):
 
 
 # ---------------------------------------------------------------------------
+# Weekly box subscription
+# ---------------------------------------------------------------------------
+def subscribe_weekly_box(request):
+    product = get_object_or_404(
+        Product, slug="weekly-harvest-box", is_active=True
+    )
+    stripe_ready = bool(settings.STRIPE_SECRET_KEY) and bool(
+        product.stripe_price_id
+    )
+
+    if request.method == "POST":
+        form = SubscriptionForm(request.POST)
+        if form.is_valid():
+            if not stripe_ready:
+                messages.error(
+                    request,
+                    "Online subscriptions aren't enabled yet — please contact us.",
+                )
+            else:
+                session = create_subscription_checkout_session(
+                    form.cleaned_data, request
+                )
+                return redirect(session.url)
+    else:
+        form = SubscriptionForm()
+
+    return render(
+        request,
+        "shop/subscribe.html",
+        {
+            "form": form,
+            "product": product,
+            "stripe_ready": stripe_ready,
+            "delivery_fee_amount": settings.DELIVERY_FEE,
+            "free_delivery_minimum": settings.FREE_DELIVERY_MINIMUM,
+        },
+    )
+
+
+def subscription_confirmation(request):
+    return render(request, "shop/subscription_confirmation.html")
+
+
+def _subscription_from_session(obj):
+    """Create/update the Subscription record when a subscription checkout completes."""
+    meta = obj.get("metadata") or {}
+    if meta.get("kind") != "weekly_subscription":
+        return None
+    sub_id = obj.get("subscription")
+    if not sub_id:
+        return None
+    sub, _ = Subscription.objects.update_or_create(
+        stripe_subscription_id=sub_id,
+        defaults={
+            "name": meta.get("name", ""),
+            "email": obj.get("customer_email") or obj.get("customer_details", {}).get("email", ""),
+            "phone": meta.get("phone", ""),
+            "fulfillment": meta.get("fulfillment", "pickup"),
+            "address_line1": meta.get("address_line1", ""),
+            "address_line2": meta.get("address_line2", ""),
+            "city": meta.get("city", ""),
+            "zip_code": meta.get("zip_code", ""),
+            "stripe_customer_id": obj.get("customer", ""),
+            "status": "active",
+        },
+    )
+    return sub
+
+
+def _fulfillment_order_for_invoice(invoice):
+    """Create a harvest/fulfillment Order for a paid subscription invoice."""
+    sub_id = invoice.get("subscription")
+    if not sub_id:
+        return None
+    try:
+        sub = Subscription.objects.get(stripe_subscription_id=sub_id)
+    except Subscription.DoesNotExist:
+        return None
+    if sub.status == "canceled":
+        return None
+    product = Product.objects.filter(slug="weekly-harvest-box").first()
+    if not product:
+        return None
+    # Avoid duplicates if Stripe retries the webhook.
+    if Order.objects.filter(
+        stripe_session_id=f"in_{invoice.get('id')}", payment_status="paid"
+    ).exists():
+        return None
+    subtotal = product.price
+    delivery_fee = _delivery_fee(subtotal, sub.fulfillment)
+    order = Order.objects.create(
+        name=sub.name,
+        email=sub.email,
+        phone=sub.phone,
+        fulfillment=sub.fulfillment,
+        address_line1=sub.address_line1,
+        address_line2=sub.address_line2,
+        city=sub.city,
+        zip_code=sub.zip_code,
+        notes="Weekly subscription renewal — harvest per schedule.",
+        subtotal=subtotal,
+        delivery_fee=delivery_fee,
+        total=subtotal + delivery_fee,
+        status="preparing",
+        payment_status="paid",
+        stripe_session_id=f"in_{invoice.get('id')}",
+    )
+    OrderItem.objects.create(
+        order=order, product=product, quantity=1, unit_price=product.price
+    )
+    return order
+
+
+# ---------------------------------------------------------------------------
 # Stripe webhook
 # ---------------------------------------------------------------------------
 @csrf_exempt
@@ -216,10 +334,22 @@ def stripe_webhook(request):
     except Exception:
         return HttpResponse(status=400)
 
-    if event["type"] == "checkout.session.completed":
-        number = (event["data"]["object"].get("metadata") or {}).get("order_number")
-        if number:
-            Order.objects.filter(number=number).update(
-                payment_status="paid", status="preparing"
-            )
+    obj = event["data"]["object"]
+    etype = event["type"]
+
+    if etype == "checkout.session.completed":
+        if obj.get("mode") == "subscription":
+            _subscription_from_session(obj)
+        else:
+            number = (obj.get("metadata") or {}).get("order_number")
+            if number:
+                Order.objects.filter(number=number).update(
+                    payment_status="paid", status="preparing"
+                )
+    elif etype == "invoice.paid":
+        _fulfillment_order_for_invoice(obj)
+    elif etype == "customer.subscription.deleted":
+        Subscription.objects.filter(
+            stripe_subscription_id=obj.get("id")
+        ).update(status="canceled")
     return HttpResponse(status=200)

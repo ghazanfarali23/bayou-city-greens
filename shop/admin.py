@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Order, OrderItem, Product
+from .models import Order, OrderItem, Product, Subscription
 
 
 @admin.register(Product)
@@ -40,3 +40,15 @@ class OrderAdmin(admin.ModelAdmin):
     @admin.action(description="Mark completed")
     def mark_completed(self, request, queryset):
         queryset.update(status="completed")
+
+
+@admin.register(Subscription)
+class SubscriptionAdmin(admin.ModelAdmin):
+    list_display = (
+        "name", "email", "fulfillment", "status", "current_period_end", "created",
+    )
+    list_filter = ("status", "fulfillment", "created")
+    search_fields = ("name", "email", "stripe_subscription_id")
+    readonly_fields = (
+        "stripe_customer_id", "stripe_subscription_id", "created", "updated",
+    )

@@ -73,3 +73,45 @@ class ContactForm(forms.Form):
     name = forms.CharField(max_length=120)
     email = forms.EmailField()
     message = forms.CharField(widget=forms.Textarea(attrs={"rows": 5}))
+
+
+class SubscriptionForm(forms.Form):
+    """Sign up for the weekly harvest-box subscription."""
+
+    FULFILLMENT_CHOICES = [
+        ("pickup", "Pickup — free"),
+        ("delivery", "Local delivery"),
+    ]
+
+    name = forms.CharField(max_length=120, label="Full name")
+    email = forms.EmailField(label="Email")
+    phone = forms.CharField(max_length=40, label="Phone")
+    fulfillment = forms.ChoiceField(
+        choices=FULFILLMENT_CHOICES,
+        widget=forms.RadioSelect,
+        initial="pickup",
+        label="How do you want your weekly box?",
+    )
+    address_line1 = forms.CharField(
+        max_length=200, required=False, label="Street address"
+    )
+    address_line2 = forms.CharField(
+        max_length=200, required=False, label="Apt / suite (optional)"
+    )
+    city = forms.CharField(max_length=100, required=False)
+    zip_code = forms.CharField(max_length=10, required=False, label="ZIP code")
+
+    def clean(self):
+        cleaned = super().clean()
+        if cleaned.get("fulfillment") == "delivery":
+            for field in ("address_line1", "city", "zip_code"):
+                if not cleaned.get(field):
+                    self.add_error(field, "Required for local delivery.")
+            zip_code = (cleaned.get("zip_code") or "").strip()
+            if zip_code and zip_code not in settings.DELIVERY_ZIPS:
+                self.add_error(
+                    "zip_code",
+                    "Sorry — we don't deliver to this ZIP yet. "
+                    "Choose pickup, or contact us about your area.",
+                )
+        return cleaned

@@ -105,3 +105,40 @@ class OrderItem(models.Model):
 
     def __str__(self):
         return f"{self.quantity} x {self.product.name}"
+
+
+class Subscription(models.Model):
+    """A recurring weekly harvest-box subscription billed via Stripe."""
+
+    STATUS_CHOICES = [
+        ("active", "Active"),
+        ("past_due", "Past due"),
+        ("canceled", "Canceled"),
+    ]
+
+    name = models.CharField(max_length=120)
+    email = models.EmailField()
+    phone = models.CharField(max_length=40)
+    fulfillment = models.CharField(
+        max_length=10, choices=Order.FULFILLMENT_CHOICES, default="pickup"
+    )
+    address_line1 = models.CharField(max_length=200, blank=True)
+    address_line2 = models.CharField(max_length=200, blank=True)
+    city = models.CharField(max_length=100, blank=True)
+    zip_code = models.CharField(max_length=10, blank=True)
+
+    stripe_customer_id = models.CharField(max_length=120, blank=True)
+    stripe_subscription_id = models.CharField(max_length=120, unique=True)
+    status = models.CharField(
+        max_length=20, choices=STATUS_CHOICES, default="active"
+    )
+    current_period_end = models.DateTimeField(null=True, blank=True)
+
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-created"]
+
+    def __str__(self):
+        return f"Weekly box subscription — {self.name} ({self.status})"

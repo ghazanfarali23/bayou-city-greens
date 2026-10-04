@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% block title %}Weekly Harvest Box Subscription — {{ brand_name }}{% endblock %}
+
+{% block content %}
+<section class="max-w-3xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
+  <h1 class="font-display text-3xl sm:text-4xl font-bold text-leaf-950">Weekly Harvest Box — Subscription</h1>
+  <p class="text-lg text-stone-600 mt-3">
+    A fresh <strong>${{ product.price }} box every week</strong>, harvested to order.
+    Billed automatically each week — pause or cancel anytime from your email receipt.
+  </p>
+
+  <form method="post" class="mt-8 bg-white rounded-2xl border border-leaf-100 shadow-sm p-6 sm:p-8 space-y-5">
+    {% csrf_token %}
+    {% if form.non_field_errors %}
+    <div class="bg-red-50 border border-red-200 text-red-800 rounded-xl px-4 py-3 text-sm">
+      {{ form.non_field_errors }}
+    </div>
+    {% endif %}
+
+    <div class="grid sm:grid-cols-2 gap-5">
+      <div>
+        <label class="form-label" for="{{ form.name.id_for_label }}">{{ form.name.label }}</label>
+        {{ form.name }}
+        {{ form.name.errors }}
+      </div>
+      <div>
+        <label class="form-label" for="{{ form.phone.id_for_label }}">{{ form.phone.label }}</label>
+        {{ form.phone }}
+        {{ form.phone.errors }}
+      </div>
+    </div>
+    <div>
+      <label class="form-label" for="{{ form.email.id_for_label }}">{{ form.email.label }}</label>
+      {{ form.email }}
+      {{ form.email.errors }}
+    </div>
+
+    <div>
+      <span class="form-label">{{ form.fulfillment.label }}</span>
+      <div class="grid sm:grid-cols-2 gap-3 mt-1">
+        {% for radio in form.fulfillment %}
+        <label class="fulfillment-card cursor-pointer border-2 rounded-2xl p-4 flex items-center gap-3 has-[:checked]:border-leaf-600 has-[:checked]:bg-leaf-50 border-stone-200">
+          {{ radio.tag }}
+          <span class="font-semibold">{{ radio.choice_label }}</span>
+        </label>
+        {% endfor %}
+      </div>
+      {{ form.fulfillment.errors }}
+    </div>
+
+    <div id="address-fields" class="space-y-5 hidden">
+      <div>
+        <label class="form-label" for="{{ form.address_line1.id_for_label }}">{{ form.address_line1.label }}</label>
+        {{ form.address_line1 }}
+        {{ form.address_line1.errors }}
+      </div>
+      <div>
+        <label class="form-label" for="{{ form.address_line2.id_for_label }}">{{ form.address_line2.label }}</label>
+        {{ form.address_line2 }}
+        {{ form.address_line2.errors }}
+      </div>
+      <div class="grid sm:grid-cols-2 gap-5">
+        <div>
+          <label class="form-label" for="{{ form.city.id_for_label }}">{{ form.city.label }}</label>
+          {{ form.city }}
+          {{ form.city.errors }}
+        </div>
+        <div>
+          <label class="form-label" for="{{ form.zip_code.id_for_label }}">{{ form.zip_code.label }}</label>
+          {{ form.zip_code }}
+          {{ form.zip_code.errors }}
+        </div>
+      </div>
+      <p class="text-sm text-stone-500">🚗 We deliver across {{ service_area }}. Delivery is ${{ delivery_fee_amount }} — free on orders over ${{ free_delivery_minimum }}.</p>
+    </div>
+
+    {% if stripe_ready %}
+    <button class="w-full bg-leaf-700 hover:bg-leaf-800 text-white font-bold py-4 rounded-xl text-lg transition">Start weekly subscription — ${{ product.price }}/week →</button>
+    <p class="text-xs text-stone-500 text-center">🔒 Billed weekly via Stripe. We never see your card number. Cancel anytime.</p>
+    {% else %}
+    <p class="bg-amber-50 border border-amber-200 text-amber-800 rounded-xl px-4 py-3 text-sm">Online subscriptions aren't enabled yet — please <a href="{% url 'contact' %}" class="underline font-semibold">contact us</a> to set one up.</p>
+    {% endif %}
+  </form>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const pickupRadio = document.querySelector('input[name="fulfillment"][value="pickup"]');
+  const deliveryRadio = document.querySelector('input[name="fulfillment"][value="delivery"]');
+  const addressFields = document.getElementById('address-fields');
+  function toggleAddress() {
+    addressFields.classList.toggle('hidden', !deliveryRadio.checked);
+  }
+  if (pickupRadio && deliveryRadio) {
+    pickupRadio.addEventListener('change', toggleAddress);
+    deliveryRadio.addEventListener('change', toggleAddress);
+    toggleAddress();
+  }
+</script>
+{% endblock %}

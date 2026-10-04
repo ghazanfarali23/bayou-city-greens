@@ -66,3 +66,39 @@ def event_from_request(request):
     import json
 
     return stripe.Event.construct_from(json.loads(payload), stripe.api_key)
+
+
+def create_subscription_checkout_session(data, request):
+    """Create a Stripe Checkout Session in subscription mode for the weekly box."""
+    import stripe
+
+    from shop.models import Product
+
+    stripe.api_key = settings.STRIPE_SECRET_KEY
+    product = Product.objects.get(slug="weekly-harvest-box")
+    if not product.stripe_price_id:
+        raise ValueError("Weekly box is missing its Stripe price link.")
+
+    success_url = (
+        request.build_absolute_uri(reverse("subscription_confirmation"))
+        + "?session_id={CHECKOUT_SESSION_ID}"
+    )
+    cancel_url = request.build_absolute_uri(reverse("subscribe_weekly_box"))
+
+    return stripe.checkout.Session.create(
+        mode="subscription",
+        line_items=[{"price": product.stripe_price_id, "quantity": 1}],
+        customer_email=data["email"],
+        success_url=success_url,
+        cancel_url=cancel_url,
+        metadata={
+            "kind": "weekly_subscription",
+            "name": data["name"],
+            "phone": data.get("phone", ""),
+            "fulfillment": data.get("fulfillment", "pickup"),
+            "address_line1": data.get("address_line1", ""),
+            "address_line2": data.get("address_line2", ""),
+            "city": data.get("city", ""),
+            "zip_code": data.get("zip_code", ""),
+        },
+    )
