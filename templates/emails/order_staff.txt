@@ -2,7 +2,9 @@ NEW ORDER {{ order.number }} — {{ order.created|date:"l, F j, Y g:i A" }}
 
 {% for item in items %}- {{ item.product.name }} x{{ item.quantity }} — ${{ item.line_total }}
 {% endfor %}
-TOTAL: ${{ order.total }}
+Subtotal: ${{ order.subtotal }}
+{% if order.discount_amount %}Coupon {{ order.coupon_code }}: −${{ order.discount_amount }}
+{% endif %}TOTAL: ${{ order.total }}
 
 Customer: {{ order.name }}
 Email: {{ order.email }}

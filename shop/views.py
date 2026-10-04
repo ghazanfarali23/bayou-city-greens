@@ -13,6 +13,7 @@ import hmac
 import json
 import logging
 import subprocess
+from decimal import Decimal
 from pathlib import Path
 
 logger = logging.getLogger(__name__)
@@ -32,6 +33,18 @@ from .cart import (
     remove_from_cart,
     set_quantity,
 )
+from .coupons import (
+    CouponError,
+    clear_session_coupon,
+    coupon_attempt_allowed,
+    get_session_coupon_code,
+    record_coupon_attempt,
+    redeem_locked_coupon,
+    set_session_coupon,
+    validate_coupon,
+    validate_locked_coupon,
+    normalize_code,
+)
 from .emails import (
     send_customer_order_confirmation,
     send_customer_subscription_confirmation,
@@ -39,7 +52,7 @@ from .emails import (
     send_staff_subscription_notification,
 )
 from .forms import CheckoutForm, ContactForm, SubscriptionForm
-from .models import Order, OrderItem, Product, Subscription
+from .models import Coupon, Order, OrderItem, Product, Subscription
 from .stripe_utils import (
     create_checkout_session,
     create_subscription_checkout_session,
@@ -121,7 +134,70 @@ def cart_add(request, pk):
 
 
 def cart_detail(request):
-    return render(request, "shop/cart.html", {"cart": cart_details(request.session)})
+    cart = cart_details(request.session)
+    coupon, discount = _cart_coupon(request, cart)
+    return render(
+        request,
+        "shop/cart.html",
+        {"cart": cart, "coupon": coupon, "discount": discount},
+    )
+
+
+# ---------------------------------------------------------------------------
+# Coupons
+# ---------------------------------------------------------------------------
+def _cart_coupon(request, cart):
+    """Validate the session coupon against the current cart.
+
+    Returns (coupon, discount). Silently drops codes that no longer validate
+    (cart changed, coupon expired, etc.) so totals never lie.
+    """
+    code = get_session_coupon_code(request.session)
+    if not code or not cart["items"]:
+        return None, 0
+    try:
+        return validate_coupon(code, cart)
+    except CouponError:
+        clear_session_coupon(request.session)
+        return None, 0
+
+
+@require_POST
+def coupon_apply(request):
+    """Apply a coupon code to the session cart. Rate-limited anti-guessing."""
+    nxt = request.POST.get("next")
+    redirect_name = "checkout" if nxt == "checkout" else "cart_detail"
+
+    if not coupon_attempt_allowed(request.session):
+        messages.error(
+            request,
+            "Too many code attempts — wait a few minutes and try again.",
+        )
+        return redirect(redirect_name)
+    record_coupon_attempt(request.session)
+
+    cart = cart_details(request.session)
+    if not cart["items"]:
+        messages.info(request, "Your cart is empty — add some greens first.")
+        return redirect("product_list")
+
+    try:
+        coupon, discount = validate_coupon(request.POST.get("code", ""), cart)
+    except CouponError as e:
+        messages.error(request, str(e))
+    else:
+        set_session_coupon(request.session, coupon.code)
+        messages.success(
+            request, f"Code {coupon.code} applied — you save ${discount:.2f}."
+        )
+    return redirect(redirect_name)
+
+
+@require_POST
+def coupon_remove(request):
+    clear_session_coupon(request.session)
+    nxt = request.POST.get("next")
+    return redirect("checkout" if nxt == "checkout" else "cart_detail")
 
 
 @require_POST
@@ -154,10 +230,29 @@ def _delivery_fee(subtotal, fulfillment):
 
 
 @transaction.atomic
-def _create_order(form, cart):
+def _create_order(form, cart, coupon_code=""):
+    """Create the order. If a coupon code is given it is validated and
+    redeemed atomically (SELECT FOR UPDATE) so usage limits can't be
+    double-spent by concurrent checkouts. Raises CouponError if the code
+    fails validation here — the transaction rolls back and no order exists.
+    """
     fulfillment = form.cleaned_data["fulfillment"]
     subtotal = cart["subtotal"]
     delivery_fee = _delivery_fee(subtotal, fulfillment)
+
+    coupon = None
+    discount = Decimal("0")
+    code = normalize_code(coupon_code)
+    if code:
+        try:
+            locked = Coupon.objects.select_for_update().get(code=code)
+        except Coupon.DoesNotExist:
+            raise CouponError("That code isn't valid.")
+        # Security gate: re-validate everything against the locked row.
+        coupon, discount = validate_locked_coupon(
+            locked, cart, email=form.cleaned_data["email"]
+        )
+
     order = Order.objects.create(
         name=form.cleaned_data["name"],
         email=form.cleaned_data["email"],
@@ -171,7 +266,10 @@ def _create_order(form, cart):
         notes=form.cleaned_data.get("notes", ""),
         subtotal=subtotal,
         delivery_fee=delivery_fee,
-        total=subtotal + delivery_fee,
+        discount_amount=discount,
+        coupon=coupon,
+        coupon_code=coupon.code if coupon else "",
+        total=subtotal - discount + delivery_fee,
         payment_status="unpaid",
     )
     for line in cart["items"]:
@@ -181,6 +279,8 @@ def _create_order(form, cart):
             quantity=line["quantity"],
             unit_price=line["product"].price,
         )
+    if coupon:
+        redeem_locked_coupon(coupon, order, order.email, discount)
     return order
 
 
@@ -193,8 +293,22 @@ def checkout(request):
     if request.method == "POST":
         form = CheckoutForm(request.POST)
         if form.is_valid():
-            order = _create_order(form, cart)
+            try:
+                order = _create_order(
+                    form, cart,
+                    coupon_code=get_session_coupon_code(request.session),
+                )
+            except CouponError as e:
+                # Coupon died between preview and order (expired, maxed out,
+                # cart changed). Drop it and let the customer review.
+                clear_session_coupon(request.session)
+                messages.error(
+                    request,
+                    f"{e} The coupon was removed — please review your order and try again.",
+                )
+                return redirect("checkout")
             clear_cart(request.session)
+            clear_session_coupon(request.session)
             _notify_safely(send_staff_order_notification, order)
             if settings.STRIPE_SECRET_KEY:
                 session = create_checkout_session(order, request)
@@ -209,12 +323,15 @@ def checkout(request):
         form = CheckoutForm()
 
     preview_fee = _delivery_fee(cart["subtotal"], "delivery")
+    coupon, discount = _cart_coupon(request, cart)
     return render(
         request,
         "shop/checkout.html",
         {
             "form": form,
             "cart": cart,
+            "coupon": coupon,
+            "discount": discount,
             "delivery_fee_amount": settings.DELIVERY_FEE,
             "free_delivery_minimum": settings.FREE_DELIVERY_MINIMUM,
             "preview_fee": preview_fee,

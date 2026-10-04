@@ -21,6 +21,7 @@
           <td style="padding:10px;border-bottom:1px solid #e7e5e4;text-align:right;">${{ item.line_total }}</td>
         </tr>
         {% endfor %}
+        {% if order.discount_amount %}<tr><td style="padding:10px;text-align:right;" colspan="2">Coupon {{ order.coupon_code }}</td><td style="padding:10px;text-align:right;">−${{ order.discount_amount }}</td></tr>{% endif %}
         <tr><td style="padding:10px;text-align:right;font-weight:bold;" colspan="2">Total</td><td style="padding:10px;text-align:right;font-weight:bold;">${{ order.total }}</td></tr>
       </table>
       <p><strong>Customer:</strong> {{ order.name }}<br>

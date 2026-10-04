@@ -5,7 +5,8 @@ Your order {{ order.number }} is confirmed. Here's what you ordered:
 {% for item in items %}- {{ item.product.name }} ({{ item.product.unit }}) x{{ item.quantity }} — ${{ item.line_total }}
 {% endfor %}
 Subtotal: ${{ order.subtotal }}
-Delivery: {% if order.delivery_fee %}${{ order.delivery_fee }}{% else %}Free{% endif %}
+{% if order.discount_amount %}Coupon {{ order.coupon_code }}: −${{ order.discount_amount }}
+{% endif %}Delivery: {% if order.delivery_fee %}${{ order.delivery_fee }}{% else %}Free{% endif %}
 Total: ${{ order.total }}
 
 {% if is_pickup %}PICKUP{% if order.delivery_date %} — scheduled for {{ order.delivery_date|date:"l, F j" }}{% endif %}

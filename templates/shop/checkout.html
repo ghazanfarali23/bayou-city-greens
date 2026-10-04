@@ -115,9 +115,27 @@
         </div>
         <div class="border-t border-leaf-800 mt-6 pt-4 space-y-2 text-sm">
           <div class="flex justify-between"><span class="text-leaf-200/80">Subtotal</span><span>${{ cart.subtotal }}</span></div>
+          {% if coupon %}
+          <div class="flex justify-between text-leaf-300"><span>Coupon {{ coupon.code }}</span><span>−${{ discount }}</span></div>
+          {% endif %}
           <div class="flex justify-between"><span class="text-leaf-200/80">Delivery</span><span id="summary-delivery">—</span></div>
           <div class="flex justify-between text-lg font-bold pt-2"><span>Total</span><span id="summary-total">${{ cart.subtotal }}</span></div>
         </div>
+        {% if coupon %}
+        <form method="post" action="{% url 'coupon_remove' %}" class="mt-4">
+          {% csrf_token %}
+          <input type="hidden" name="next" value="checkout">
+          <button class="text-xs text-leaf-200/70 hover:text-leaf-100 underline">Remove coupon {{ coupon.code }}</button>
+        </form>
+        {% else %}
+        <form method="post" action="{% url 'coupon_apply' %}" class="mt-4 flex gap-2">
+          {% csrf_token %}
+          <input type="hidden" name="next" value="checkout">
+          <input name="code" type="text" placeholder="Coupon code" autocomplete="off"
+                 class="flex-1 min-w-0 bg-leaf-900 border border-leaf-700 rounded-xl px-3 py-2 text-sm uppercase placeholder:normal-case placeholder:text-leaf-200/40 focus:outline-none focus:ring-2 focus:ring-leaf-500">
+          <button class="bg-leaf-700 hover:bg-leaf-600 text-white text-sm font-bold px-4 py-2 rounded-xl transition">Apply</button>
+        </form>
+        {% endif %}
       </div>
     </div>
   </div>
@@ -130,6 +148,7 @@
   const deliveryRadio = document.querySelector('input[name="fulfillment"][value="delivery"]');
   const addressFields = document.getElementById('address-fields');
   const subtotal = parseFloat('{{ cart.subtotal }}');
+  const discount = parseFloat('{{ discount|default:"0" }}') || 0;
   const fee = parseFloat('{{ delivery_fee_amount }}');
   const freeMin = parseFloat('{{ free_delivery_minimum }}');
 
@@ -138,7 +157,7 @@
     addressFields.classList.toggle('hidden', !isDelivery);
     const dFee = isDelivery ? (subtotal >= freeMin ? 0 : fee) : 0;
     document.getElementById('summary-delivery').textContent = isDelivery ? (dFee === 0 ? 'FREE' : '$' + dFee.toFixed(2)) : 'Pickup — free';
-    document.getElementById('summary-total').textContent = '$' + (subtotal + dFee).toFixed(2);
+    document.getElementById('summary-total').textContent = '$' + (subtotal - discount + dFee).toFixed(2);
   }
   [pickupRadio, deliveryRadio].forEach(r => r && r.addEventListener('change', refresh));
   refresh();

@@ -40,6 +40,30 @@
       </div>
     </div>
   </form>
+
+  <!-- Coupon -->
+  <div class="bg-white rounded-2xl border border-leaf-100 shadow-sm p-5 sm:p-6 mt-6">
+    {% if coupon %}
+    <div class="flex items-center justify-between gap-4">
+      <p class="text-sm">
+        <span class="inline-block bg-leaf-100 text-leaf-800 font-bold px-3 py-1 rounded-lg tracking-wide">{{ coupon.code }}</span>
+        <span class="text-stone-600 ml-2">applied — you save <strong class="text-leaf-700">${{ discount }}</strong></span>
+      </p>
+      <form method="post" action="{% url 'coupon_remove' %}">
+        {% csrf_token %}
+        <button class="text-sm text-red-600 hover:text-red-800 font-medium">Remove</button>
+      </form>
+    </div>
+    {% else %}
+    <form method="post" action="{% url 'coupon_apply' %}" class="flex flex-col sm:flex-row gap-3">
+      {% csrf_token %}
+      <label class="sr-only" for="coupon-code">Coupon code</label>
+      <input id="coupon-code" name="code" type="text" placeholder="Have a coupon code?" autocomplete="off"
+             class="flex-1 border border-stone-300 rounded-xl px-4 py-2.5 uppercase placeholder:normal-case focus:outline-none focus:ring-2 focus:ring-leaf-500">
+      <button class="bg-leaf-700 hover:bg-leaf-800 text-white font-bold px-6 py-2.5 rounded-xl transition">Apply</button>
+    </form>
+    {% endif %}
+  </div>
   <p class="text-sm text-stone-500 mt-6">🚗 Free pickup · Local delivery $4.95 (free over $35) — calculated at checkout.</p>
   {% else %}
   <div class="bg-white rounded-2xl border border-leaf-100 p-12 text-center">

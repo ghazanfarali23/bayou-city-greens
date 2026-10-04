@@ -3,25 +3,59 @@ from django.conf import settings
 from django.urls import reverse
 
 
+def get_or_create_stripe_coupon(order):
+    """Return a Stripe coupon id for this order's discount.
+
+    Always created as a fixed-amount (amount_off) coupon for the exact
+    computed discount — never as percent_off — so what Stripe charges
+    matches the order total to the cent, even with percent caps or
+    product-restricted coupons. One coupon per order (duration: once).
+    """
+    import stripe
+
+    stripe.api_key = settings.STRIPE_SECRET_KEY
+    coupon = stripe.Coupon.create(
+        amount_off=int(order.discount_amount * 100),
+        currency="usd",
+        duration="once",
+        name=f"Space City Sprouts {order.number} ({order.coupon_code})",
+        metadata={
+            "order_number": order.number,
+            "coupon_code": order.coupon_code,
+        },
+    )
+    return coupon.id
+
+
 def create_checkout_session(order, request):
     import stripe
 
     stripe.api_key = settings.STRIPE_SECRET_KEY
 
+    # Discounts attach to product line items only — never the delivery fee
+    # line — so Stripe's math matches the order total exactly.
+    stripe_coupon_id = None
+    if order.coupon and order.discount_amount > 0:
+        stripe_coupon_id = get_or_create_stripe_coupon(order)
+
+    def _eligible(product):
+        return bool(order.coupon) and order.coupon.applies_to_product(product)
+
     line_items = []
     for item in order.items.all():
-        line_items.append(
-            {
-                "price_data": {
-                    "currency": "usd",
-                    "unit_amount": int(item.unit_price * 100),
-                    "product_data": {
-                        "name": f"{item.product.name} — {item.product.unit}",
-                    },
+        line = {
+            "price_data": {
+                "currency": "usd",
+                "unit_amount": int(item.unit_price * 100),
+                "product_data": {
+                    "name": f"{item.product.name} — {item.product.unit}",
                 },
-                "quantity": item.quantity,
-            }
-        )
+            },
+            "quantity": item.quantity,
+        }
+        if stripe_coupon_id and _eligible(item.product):
+            line["discounts"] = [{"coupon": stripe_coupon_id}]
+        line_items.append(line)
     if order.delivery_fee > 0:
         line_items.append(
             {
