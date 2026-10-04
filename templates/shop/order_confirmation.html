@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Order {{ order.number }} — {{ brand_name }}{% endblock %}
+
+{% block content %}
+<section class="max-w-3xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
+  <div class="bg-white rounded-3xl border border-leaf-100 shadow-sm p-8 sm:p-12 text-center">
+    <div class="w-20 h-20 mx-auto rounded-full bg-leaf-100 flex items-center justify-center text-4xl mb-6">🌱</div>
+    <h1 class="font-display text-3xl sm:text-4xl font-bold text-leaf-950 mb-3">Thanks, {{ order.name|first }}! Your greens are on the way.</h1>
+    <p class="text-stone-600 mb-2">Order <strong class="font-mono">{{ order.number }}</strong></p>
+    {% if just_paid %}
+    <p class="inline-block bg-leaf-100 text-leaf-900 font-semibold text-sm px-4 py-2 rounded-full mb-6">✅ Payment received — thank you!</p>
+    {% elif order.payment_status == "pay_on_fulfillment" %}
+    <p class="inline-block bg-amber-100 text-amber-900 font-semibold text-sm px-4 py-2 rounded-full mb-6">💳 Pay by card, cash, or tap on {{ order.get_fulfillment_display|lower }}</p>
+    {% endif %}
+
+    <div class="text-left bg-cream rounded-2xl p-6 mt-4">
+      <h2 class="font-bold mb-4">Order details</h2>
+      <div class="space-y-2 text-sm">
+        {% for item in order.items.all %}
+        <div class="flex justify-between">
+          <span>{{ item.quantity }} × {{ item.product.name }} <span class="text-stone-500">({{ item.product.unit }})</span></span>
+          <span class="font-semibold">${{ item.line_total }}</span>
+        </div>
+        {% endfor %}
+        <div class="flex justify-between pt-2 border-t border-stone-200">
+          <span class="text-stone-500">Subtotal</span><span>${{ order.subtotal }}</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-stone-500">{{ order.get_fulfillment_display }}</span>
+          <span>{% if order.delivery_fee %}${{ order.delivery_fee }}{% else %}Free{% endif %}</span>
+        </div>
+        <div class="flex justify-between text-lg font-bold">
+          <span>Total</span><span>${{ order.total }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="text-left mt-6 space-y-3 text-sm text-stone-600">
+      {% if order.fulfillment == "pickup" %}
+      <p>📍 <strong>Pickup:</strong> {{ pickup_address }}</p>
+      {% else %}
+      <p>🚗 <strong>Delivery to:</strong> {{ order.address_line1 }}{% if order.address_line2 %}, {{ order.address_line2 }}{% endif %}, {{ order.city }} {{ order.zip_code }}</p>
+      {% endif %}
+      {% if order.delivery_date %}<p>📅 <strong>Preferred day:</strong> {{ order.delivery_date }}</p>{% endif %}
+      <p>✂️ We harvest to order — we'll confirm your {{ order.get_fulfillment_display|lower }} time by email/text at <strong>{{ order.email }}</strong>.</p>
+    </div>
+
+    <a href="{% url 'product_list' %}" class="inline-block mt-8 bg-leaf-700 hover:bg-leaf-800 text-white font-bold px-8 py-3 rounded-xl transition">Order more greens</a>
+  </div>
+</section>
+{% endblock %}
