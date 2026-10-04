@@ -33,30 +33,27 @@ def create_checkout_session(order, request):
 
     stripe.api_key = settings.STRIPE_SECRET_KEY
 
-    # Discounts attach to product line items only — never the delivery fee
-    # line — so Stripe's math matches the order total exactly.
+    # The Stripe coupon is always an exact amount_off for the computed
+    # discount, so a session-level discount matches the order total to the
+    # cent (products + delivery fee − discount).
     stripe_coupon_id = None
     if order.coupon and order.discount_amount > 0:
         stripe_coupon_id = get_or_create_stripe_coupon(order)
 
-    def _eligible(product):
-        return bool(order.coupon) and order.coupon.applies_to_product(product)
-
     line_items = []
     for item in order.items.all():
-        line = {
-            "price_data": {
-                "currency": "usd",
-                "unit_amount": int(item.unit_price * 100),
-                "product_data": {
-                    "name": f"{item.product.name} — {item.product.unit}",
+        line_items.append(
+            {
+                "price_data": {
+                    "currency": "usd",
+                    "unit_amount": int(item.unit_price * 100),
+                    "product_data": {
+                        "name": f"{item.product.name} — {item.product.unit}",
+                    },
                 },
-            },
-            "quantity": item.quantity,
-        }
-        if stripe_coupon_id and _eligible(item.product):
-            line["discounts"] = [{"coupon": stripe_coupon_id}]
-        line_items.append(line)
+                "quantity": item.quantity,
+            }
+        )
     if order.delivery_fee > 0:
         line_items.append(
             {
@@ -77,14 +74,18 @@ def create_checkout_session(order, request):
     )
     cancel_url = request.build_absolute_uri(reverse("checkout"))
 
-    return stripe.checkout.Session.create(
-        mode="payment",
-        line_items=line_items,
-        success_url=success_url,
-        cancel_url=cancel_url,
-        customer_email=order.email,
-        metadata={"order_number": order.number},
-    )
+    session_params = {
+        "mode": "payment",
+        "line_items": line_items,
+        "success_url": success_url,
+        "cancel_url": cancel_url,
+        "customer_email": order.email,
+        "metadata": {"order_number": order.number},
+    }
+    if stripe_coupon_id:
+        session_params["discounts"] = [{"coupon": stripe_coupon_id}]
+
+    return stripe.checkout.Session.create(**session_params)
 
 
 def event_from_request(request):
