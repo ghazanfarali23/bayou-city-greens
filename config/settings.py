@@ -1,4 +1,4 @@
-"""Django settings for Bayou City Greens."""
+"""Django settings for Space City Sprouts."""
 import os
 from decimal import Decimal
 from pathlib import Path
@@ -88,14 +88,14 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 EMAIL_BACKEND = os.environ.get(
     "DJANGO_EMAIL_BACKEND", "django.core.mail.backends.console.EmailBackend"
 )
-DEFAULT_FROM_EMAIL = os.environ.get("CONTACT_EMAIL", "hello@bayoucitygreens.com")
+DEFAULT_FROM_EMAIL = os.environ.get("CONTACT_EMAIL", "hello@spacecitysprouts.com")
 
 # ---------------------------------------------------------------------------
 # Business
 # ---------------------------------------------------------------------------
-BRAND_NAME = os.environ.get("BRAND_NAME", "Bayou City Greens")
+BRAND_NAME = os.environ.get("BRAND_NAME", "Space City Sprouts")
 BRAND_TAGLINE = "Houston-grown organic microgreens, harvested to order."
-CONTACT_EMAIL = os.environ.get("CONTACT_EMAIL", "hello@bayoucitygreens.com")
+CONTACT_EMAIL = os.environ.get("CONTACT_EMAIL", "hello@spacecitysprouts.com")
 CONTACT_PHONE = os.environ.get("CONTACT_PHONE", "")
 PICKUP_ADDRESS = os.environ.get(
     "PICKUP_ADDRESS", "Houston, TX — exact pickup address shared after you order."

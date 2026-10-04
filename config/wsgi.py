@@ -1,4 +1,4 @@
-"""WSGI config for Bayou City Greens."""
+"""WSGI config for Space City Sprouts."""
 import os
 
 from django.core.wsgi import get_wsgi_application

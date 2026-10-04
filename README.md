@@ -1,4 +1,4 @@
-# 🌱 Bayou City Greens
+# 🌱 Space City Sprouts
 
 A marketing + e-commerce website for a Houston home-grown organic microgreens business.
 Built with Django — storefront, cart, checkout with local pickup/delivery, and Stripe-ready online payments.
