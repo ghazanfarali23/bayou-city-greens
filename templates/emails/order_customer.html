@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width"></head>
+<body style="margin:0;padding:0;background:#f5f5f4;font-family:Georgia,'Times New Roman',serif;">
+  <div style="max-width:600px;margin:0 auto;background:#ffffff;">
+    <div style="background:#14532d;padding:28px 32px;text-align:center;">
+      <div style="font-size:26px;font-weight:bold;color:#ffffff;letter-spacing:0.5px;">🌱 Space City Sprouts</div>
+      <div style="font-size:13px;color:#bbf7d0;margin-top:4px;">Fresh microgreens, grown in Houston</div>
+    </div>
+    <div style="padding:32px;color:#292524;font-size:15px;line-height:1.6;">
+      <h1 style="font-size:22px;color:#14532d;margin:0 0 16px;">Order confirmed — thank you, {{ order.name }}!</h1>
+      <p>Your order <strong>{{ order.number }}</strong> is confirmed. Here's what you ordered:</p>
+      <table style="width:100%;border-collapse:collapse;margin:16px 0;">
+        <tr style="background:#f0fdf4;">
+          <th style="text-align:left;padding:10px;border-bottom:2px solid #14532d;">Item</th>
+          <th style="text-align:right;padding:10px;border-bottom:2px solid #14532d;">Qty</th>
+          <th style="text-align:right;padding:10px;border-bottom:2px solid #14532d;">Price</th>
+        </tr>
+        {% for item in items %}
+        <tr>
+          <td style="padding:10px;border-bottom:1px solid #e7e5e4;">{{ item.product.name }} <span style="color:#78716c;font-size:13px;">({{ item.product.unit }})</span></td>
+          <td style="padding:10px;border-bottom:1px solid #e7e5e4;text-align:right;">{{ item.quantity }}</td>
+          <td style="padding:10px;border-bottom:1px solid #e7e5e4;text-align:right;">${{ item.line_total }}</td>
+        </tr>
+        {% endfor %}
+        <tr><td style="padding:10px;text-align:right;" colspan="2">Subtotal</td><td style="padding:10px;text-align:right;">${{ order.subtotal }}</td></tr>
+        <tr><td style="padding:10px;text-align:right;" colspan="2">Delivery</td><td style="padding:10px;text-align:right;">{% if order.delivery_fee %}${{ order.delivery_fee }}{% else %}Free{% endif %}</td></tr>
+        <tr><td style="padding:10px;text-align:right;font-weight:bold;" colspan="2">Total</td><td style="padding:10px;text-align:right;font-weight:bold;">${{ order.total }}</td></tr>
+      </table>
+      <div style="background:#f0fdf4;border-left:4px solid #14532d;padding:16px;margin:20px 0;">
+        {% if is_pickup %}
+        <strong>Pickup</strong><br>
+        {% if order.delivery_date %}Scheduled for <strong>{{ order.delivery_date|date:"l, F j" }}</strong><br>{% endif %}
+        We'll have your greens cut fresh that morning. We'll confirm your pickup window by text.
+        {% else %}
+        <strong>Local delivery</strong><br>
+        {% if order.delivery_date %}Scheduled for <strong>{{ order.delivery_date|date:"l, F j" }}</strong><br>{% endif %}
+        {{ order.address_line1 }}{% if order.address_line2 %}, {{ order.address_line2 }}{% endif %}, {{ order.city }} {{ order.zip_code }}<br>
+        We'll text you when your greens are on the way.
+        {% endif %}
+      </div>
+      {% if order.payment_status == "paid" %}
+      <p>✅ <strong>Payment received</strong> — you're all set.</p>
+      {% else %}
+      <p>💳 <strong>Payment:</strong> please pay by card, cash, or tap when you pick up / receive your greens.</p>
+      {% endif %}
+      <p>Your microgreens are cut the morning of your pickup/delivery and stay crisp 7–10 days refrigerated.</p>
+      <p>Questions? Reply to this email or call us at {{ contact_phone }}.</p>
+      <p style="margin-top:24px;">— The Space City Sprouts team</p>
+    </div>
+    <div style="background:#f5f5f4;padding:20px 32px;text-align:center;font-size:12px;color:#78716c;">
+      Space City Sprouts · Houston, TX<br>
+      <a href="{{ site_url }}" style="color:#14532d;">spacecitysprouts.com</a> · {{ contact_email }} · {{ contact_phone }}
+    </div>
+  </div>
+</body>
+</html>

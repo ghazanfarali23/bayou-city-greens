@@ -11,8 +11,19 @@ from django.views.decorators.http import require_POST
 import hashlib
 import hmac
 import json
+import logging
 import subprocess
 from pathlib import Path
+
+logger = logging.getLogger(__name__)
+
+
+def _notify_safely(fn, *args):
+    """Send a transactional email without ever breaking the request."""
+    try:
+        fn(*args)
+    except Exception:
+        logger.exception("Failed to send email via %s", getattr(fn, "__name__", fn))
 
 from .cart import (
     add_to_cart,
@@ -20,6 +31,12 @@ from .cart import (
     clear_cart,
     remove_from_cart,
     set_quantity,
+)
+from .emails import (
+    send_customer_order_confirmation,
+    send_customer_subscription_confirmation,
+    send_staff_order_notification,
+    send_staff_subscription_notification,
 )
 from .forms import CheckoutForm, ContactForm, SubscriptionForm
 from .models import Order, OrderItem, Product, Subscription
@@ -178,6 +195,7 @@ def checkout(request):
         if form.is_valid():
             order = _create_order(form, cart)
             clear_cart(request.session)
+            _notify_safely(send_staff_order_notification, order)
             if settings.STRIPE_SECRET_KEY:
                 session = create_checkout_session(order, request)
                 order.stripe_session_id = session.id
@@ -185,6 +203,7 @@ def checkout(request):
                 return redirect(session.url)
             order.payment_status = "pay_on_fulfillment"
             order.save(update_fields=["payment_status"])
+            _notify_safely(send_customer_order_confirmation, order)
             return redirect("order_confirmation", number=order.number)
     else:
         form = CheckoutForm()
@@ -345,15 +364,25 @@ def stripe_webhook(request):
 
     if etype == "checkout.session.completed":
         if obj.get("mode") == "subscription":
-            _subscription_from_session(obj)
+            sub = _subscription_from_session(obj)
+            if sub:
+                if not sub.staff_emailed:
+                    _notify_safely(send_staff_subscription_notification, sub)
+                if not sub.customer_emailed:
+                    _notify_safely(send_customer_subscription_confirmation, sub)
         else:
             number = (obj.get("metadata") or {}).get("order_number")
             if number:
                 Order.objects.filter(number=number).update(
                     payment_status="paid", status="preparing"
                 )
+                order = Order.objects.filter(number=number).first()
+                if order and not order.customer_emailed:
+                    _notify_safely(send_customer_order_confirmation, order)
     elif etype == "invoice.paid":
-        _fulfillment_order_for_invoice(obj)
+        order = _fulfillment_order_for_invoice(obj)
+        if order and not order.staff_emailed:
+            _notify_safely(send_staff_order_notification, order)
     elif etype == "customer.subscription.deleted":
         Subscription.objects.filter(
             stripe_subscription_id=obj.get("id")

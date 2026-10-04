@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width"></head>
+<body style="margin:0;padding:0;background:#f5f5f4;font-family:Georgia,'Times New Roman',serif;">
+  <div style="max-width:600px;margin:0 auto;background:#ffffff;">
+    <div style="background:#14532d;padding:24px 32px;">
+      <div style="font-size:22px;font-weight:bold;color:#ffffff;">🌱 New order {{ order.number }}</div>
+      <div style="font-size:13px;color:#bbf7d0;margin-top:4px;">{{ order.created|date:"l, F j, Y g:i A" }}</div>
+    </div>
+    <div style="padding:28px 32px;color:#292524;font-size:15px;line-height:1.6;">
+      <table style="width:100%;border-collapse:collapse;margin-bottom:20px;">
+        <tr style="background:#f0fdf4;">
+          <th style="text-align:left;padding:10px;border-bottom:2px solid #14532d;">Item</th>
+          <th style="text-align:right;padding:10px;border-bottom:2px solid #14532d;">Qty</th>
+          <th style="text-align:right;padding:10px;border-bottom:2px solid #14532d;">Price</th>
+        </tr>
+        {% for item in items %}
+        <tr>
+          <td style="padding:10px;border-bottom:1px solid #e7e5e4;">{{ item.product.name }}</td>
+          <td style="padding:10px;border-bottom:1px solid #e7e5e4;text-align:right;">{{ item.quantity }}</td>
+          <td style="padding:10px;border-bottom:1px solid #e7e5e4;text-align:right;">${{ item.line_total }}</td>
+        </tr>
+        {% endfor %}
+        <tr><td style="padding:10px;text-align:right;font-weight:bold;" colspan="2">Total</td><td style="padding:10px;text-align:right;font-weight:bold;">${{ order.total }}</td></tr>
+      </table>
+      <p><strong>Customer:</strong> {{ order.name }}<br>
+      <strong>Email:</strong> {{ order.email }}<br>
+      <strong>Phone:</strong> {{ order.phone }}</p>
+      <p><strong>Fulfillment:</strong> {{ order.get_fulfillment_display }}
+      {% if order.delivery_date %}<br><strong>Date:</strong> {{ order.delivery_date|date:"l, F j, Y" }}{% endif %}
+      {% if not is_pickup %}<br><strong>Address:</strong> {{ order.address_line1 }}{% if order.address_line2 %}, {{ order.address_line2 }}{% endif %}, {{ order.city }} {{ order.zip_code }}{% endif %}</p>
+      <p><strong>Payment:</strong> {{ order.get_payment_status_display }}</p>
+      {% if order.notes %}<p><strong>Notes:</strong> {{ order.notes }}</p>{% endif %}
+    </div>
+  </div>
+</body>
+</html>

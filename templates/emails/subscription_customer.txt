@@ -1,0 +1,16 @@
+You're subscribed, {{ subscription.name }}!
+
+Your Weekly Harvest Box subscription is active. Here's how it works:
+
+- A fresh box harvested for you every week
+- $39.99/week billed automatically to your card
+- {% if is_pickup %}Pickup — we'll confirm your pickup window by text each week{% else %}Delivered to {{ subscription.address_line1 }}, {{ subscription.city }} {{ subscription.zip_code }}{% endif %}
+
+We'll be in touch about your first box's pickup / delivery day. Greens are always cut fresh the morning they go out.
+
+Need to pause, skip a week, or cancel? Just reply to this email or use the management link in your Stripe receipt.
+
+Questions? Reply or call {{ contact_phone }}.
+
+— The Space City Sprouts team
+{{ site_url }}

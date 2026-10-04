@@ -1,0 +1,24 @@
+Order confirmed — thank you, {{ order.name }}!
+
+Your order {{ order.number }} is confirmed. Here's what you ordered:
+
+{% for item in items %}- {{ item.product.name }} ({{ item.product.unit }}) x{{ item.quantity }} — ${{ item.line_total }}
+{% endfor %}
+Subtotal: ${{ order.subtotal }}
+Delivery: {% if order.delivery_fee %}${{ order.delivery_fee }}{% else %}Free{% endif %}
+Total: ${{ order.total }}
+
+{% if is_pickup %}PICKUP{% if order.delivery_date %} — scheduled for {{ order.delivery_date|date:"l, F j" }}{% endif %}
+We'll have your greens cut fresh that morning and confirm your pickup window by text.
+{% else %}LOCAL DELIVERY{% if order.delivery_date %} — scheduled for {{ order.delivery_date|date:"l, F j" }}{% endif %}
+{{ order.address_line1 }}{% if order.address_line2 %}, {{ order.address_line2 }}{% endif %}, {{ order.city }} {{ order.zip_code }}
+We'll text you when your greens are on the way.{% endif %}
+
+{% if order.payment_status == "paid" %}Payment received — you're all set.{% else %}Payment: please pay by card, cash, or tap on pickup/delivery.{% endif %}
+
+Your microgreens are cut the morning of your pickup/delivery and stay crisp 7-10 days refrigerated.
+
+Questions? Reply to this email or call {{ contact_phone }}.
+
+— The Space City Sprouts team
+{{ site_url }}

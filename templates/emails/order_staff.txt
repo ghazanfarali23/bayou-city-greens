@@ -1,0 +1,16 @@
+NEW ORDER {{ order.number }} — {{ order.created|date:"l, F j, Y g:i A" }}
+
+{% for item in items %}- {{ item.product.name }} x{{ item.quantity }} — ${{ item.line_total }}
+{% endfor %}
+TOTAL: ${{ order.total }}
+
+Customer: {{ order.name }}
+Email: {{ order.email }}
+Phone: {{ order.phone }}
+
+Fulfillment: {{ order.get_fulfillment_display }}{% if order.delivery_date %}
+Date: {{ order.delivery_date|date:"l, F j, Y" }}{% endif %}{% if not is_pickup %}
+Address: {{ order.address_line1 }}{% if order.address_line2 %}, {{ order.address_line2 }}{% endif %}, {{ order.city }} {{ order.zip_code }}{% endif %}
+
+Payment: {{ order.get_payment_status_display }}
+{% if order.notes %}Notes: {{ order.notes }}{% endif %}

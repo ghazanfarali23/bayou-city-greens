@@ -139,3 +139,24 @@ STRIPE_WEBHOOK_SECRET = os.environ.get("STRIPE_WEBHOOK_SECRET", "")
 # GitHub push-to-deploy webhook — shared secret for the /deploy/github/ hook.
 # ---------------------------------------------------------------------------
 GITHUB_WEBHOOK_SECRET = os.environ.get("GITHUB_WEBHOOK_SECRET", "")
+
+# ---------------------------------------------------------------------------
+# Email — transactional mail via the server's Plesk mail (SPF/DKIM/DMARC in DNS).
+# ---------------------------------------------------------------------------
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = os.environ.get("EMAIL_HOST", "localhost")
+EMAIL_PORT = int(os.environ.get("EMAIL_PORT", "587"))
+EMAIL_USE_TLS = os.environ.get("EMAIL_USE_TLS", "True").lower() in ("1", "true", "yes")
+EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "hello@spacecitysprouts.com")
+EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
+EMAIL_TIMEOUT = 20
+DEFAULT_FROM_EMAIL = os.environ.get(
+    "DEFAULT_FROM_EMAIL", "Space City Sprouts <hello@spacecitysprouts.com>"
+)
+# Order notifications: to + cc
+STAFF_ORDER_EMAIL = os.environ.get("STAFF_ORDER_EMAIL", "Iqbal_abi@yahoo.com")
+STAFF_ORDER_CC = [
+    e.strip()
+    for e in os.environ.get("STAFF_ORDER_CC", "ghazanfarali23@gmail.com").split(",")
+    if e.strip()
+]

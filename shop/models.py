@@ -81,6 +81,9 @@ class Order(models.Model):
     )
     stripe_session_id = models.CharField(max_length=200, blank=True)
 
+    customer_emailed = models.BooleanField(default=False)
+    staff_emailed = models.BooleanField(default=False)
+
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 
@@ -133,6 +136,9 @@ class Subscription(models.Model):
         max_length=20, choices=STATUS_CHOICES, default="active"
     )
     current_period_end = models.DateTimeField(null=True, blank=True)
+
+    customer_emailed = models.BooleanField(default=False)
+    staff_emailed = models.BooleanField(default=False)
 
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width"></head>
+<body style="margin:0;padding:0;background:#f5f5f4;font-family:Georgia,'Times New Roman',serif;">
+  <div style="max-width:600px;margin:0 auto;background:#ffffff;">
+    <div style="background:#14532d;padding:28px 32px;text-align:center;">
+      <div style="font-size:26px;font-weight:bold;color:#ffffff;">🌱 Space City Sprouts</div>
+      <div style="font-size:13px;color:#bbf7d0;margin-top:4px;">Fresh microgreens, grown in Houston</div>
+    </div>
+    <div style="padding:32px;color:#292524;font-size:15px;line-height:1.6;">
+      <h1 style="font-size:22px;color:#14532d;margin:0 0 16px;">You're subscribed, {{ subscription.name }}! 🎉</h1>
+      <p>Your <strong>Weekly Harvest Box</strong> subscription is active. Here's how it works:</p>
+      <ul style="padding-left:20px;">
+        <li>A fresh box is harvested for you <strong>every week</strong></li>
+        <li><strong>$39.99/week</strong> billed automatically to your card</li>
+        <li>{% if is_pickup %}Pickup — we'll confirm your pickup window by text each week{% else %}Delivered to {{ subscription.address_line1 }}, {{ subscription.city }} {{ subscription.zip_code }}{% endif %}</li>
+      </ul>
+      <div style="background:#f0fdf4;border-left:4px solid #14532d;padding:16px;margin:20px 0;">
+        We'll be in touch about your first box's pickup / delivery day. Your greens are always cut fresh the morning they go out.
+      </div>
+      <p>Need to pause, skip a week, or cancel? Just reply to this email or use the management link in your Stripe receipt — no hassle, no questions asked.</p>
+      <p>Questions? Reply to this email or call us at {{ contact_phone }}.</p>
+      <p style="margin-top:24px;">— The Space City Sprouts team</p>
+    </div>
+    <div style="background:#f5f5f4;padding:20px 32px;text-align:center;font-size:12px;color:#78716c;">
+      Space City Sprouts · Houston, TX<br>
+      <a href="{{ site_url }}" style="color:#14532d;">spacecitysprouts.com</a> · {{ contact_email }} · {{ contact_phone }}
+    </div>
+  </div>
+</body>
+</html>

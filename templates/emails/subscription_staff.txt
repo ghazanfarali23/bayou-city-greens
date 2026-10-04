@@ -1,0 +1,11 @@
+NEW WEEKLY SUBSCRIPTION — {{ subscription.created|date:"l, F j, Y g:i A" }}
+
+Subscriber: {{ subscription.name }}
+Email: {{ subscription.email }}
+Phone: {{ subscription.phone }}
+
+Plan: Weekly Harvest Box — $39.99/week
+Fulfillment: {{ subscription.get_fulfillment_display }}{% if not is_pickup %}
+Address: {{ subscription.address_line1 }}{% if subscription.address_line2 %}, {{ subscription.address_line2 }}{% endif %}, {{ subscription.city }} {{ subscription.zip_code }}{% endif %}
+
+Each weekly payment will auto-create a harvest order. First box: confirm the pickup / delivery day with the customer.
