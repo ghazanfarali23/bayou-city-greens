@@ -61,6 +61,15 @@ gunicorn config.wsgi:application --bind 0.0.0.0:8000
 
 It also drops cleanly into **Coolify** (Nixpacks/Dockerfile auto-detects Python): set the env vars from `.env.example` in Coolify's environment section, add a persistent volume for `db.sqlite3` (or switch `DATABASES` to Postgres), and point your domain at it.
 
+### Push-to-deploy (Plesk server)
+
+Pushing to `master` auto-deploys to the Plesk server within seconds:
+
+1. A GitHub webhook (`/deploy/github/`, HMAC-signed with `GITHUB_WEBHOOK_SECRET`) fires on every push to `master`.
+2. The app runs `deploy.sh`: `git fetch` + `reset --hard origin/master`, `migrate`, `collectstatic`, then restarts gunicorn (`spacecit` has passwordless sudo for that one restart command only).
+
+To deploy manually over SSH: `su -s /bin/bash spacecit -c /var/www/vhosts/spacecitysprouts.com/app/deploy.sh` — or just run `/var/www/vhosts/spacecitysprouts.com/app/deploy.sh` as root.
+
 ## Project layout
 
 ```
