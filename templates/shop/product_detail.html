@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ product.name }} Microgreens — {{ brand_name }}{% endblock %}
+
+{% block content %}
+<section class="max-w-7xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
+  <a href="{% url 'product_list' %}" class="text-sm font-semibold text-leaf-700 hover:text-leaf-900">← Back to shop</a>
+  <div class="grid md:grid-cols-2 gap-10 mt-6">
+    <div>
+      <img src="{% static product.image %}" alt="{{ product.name }} microgreens" class="rounded-3xl shadow-lg w-full h-[420px] object-cover">
+    </div>
+    <div>
+      <span class="text-[11px] font-bold uppercase tracking-wider bg-leaf-100 text-leaf-800 px-2.5 py-1 rounded-full">{{ product.category }}</span>
+      <h1 class="font-display text-4xl font-bold text-leaf-950 mt-3">{{ product.name }}</h1>
+      <p class="text-stone-500 mt-1">{{ product.unit }}</p>
+      <p class="font-display text-3xl font-bold text-leaf-800 mt-4">${{ product.price }}</p>
+      <p class="text-lg text-stone-700 mt-4">{{ product.tagline }}</p>
+      <p class="text-stone-600 mt-3">{{ product.description }}</p>
+
+      <form method="post" action="{% url 'cart_add' product.pk %}" class="mt-6 flex items-center gap-3">
+        {% csrf_token %}
+        <label class="text-sm font-semibold">Qty
+          <input type="number" name="quantity" value="1" min="1" max="99" class="w-20 ml-2 border border-stone-300 rounded-xl px-3 py-2.5">
+        </label>
+        <button class="bg-leaf-700 hover:bg-leaf-800 text-white font-bold px-8 py-3 rounded-xl transition">Add to cart</button>
+      </form>
+
+      {% if product.nutrition %}
+      <div class="mt-8 bg-leaf-50 border border-leaf-200 rounded-2xl p-5">
+        <h3 class="font-bold text-leaf-900 mb-1">🥗 Nutrition highlights</h3>
+        <p class="text-sm text-stone-600">{{ product.nutrition }}</p>
+      </div>
+      {% endif %}
+
+      <div class="mt-6 text-sm text-stone-500 space-y-1">
+        <p>✂️ Cut fresh the morning of your pickup / delivery</p>
+        <p>🧊 Stays crisp 7–10 days refrigerated</p>
+        <p>🚗 Free pickup · Local delivery across Houston</p>
+      </div>
+    </div>
+  </div>
+
+  {% if related %}
+  <div class="mt-20">
+    <h2 class="font-display text-2xl font-bold text-leaf-950 mb-6">Pairs well with</h2>
+    <div class="grid sm:grid-cols-3 gap-6">
+      {% for p in related %}
+      <a href="{% url 'product_detail' p.slug %}" class="product-card bg-white rounded-2xl overflow-hidden shadow-sm border border-leaf-100 block">
+        <img src="{% static p.image %}" alt="{{ p.name }}" class="w-full h-44 object-cover">
+        <div class="p-4 flex items-center justify-between">
+          <span class="font-display font-bold">{{ p.name }}</span>
+          <span class="font-bold text-leaf-800">${{ p.price }}</span>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+</section>
+{% endblock %}

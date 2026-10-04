@@ -1,0 +1,20 @@
+# Python / Django
+__pycache__/
+*.py[cod]
+*.sqlite3
+db.sqlite3
+.venv/
+venv/
+env/
+
+# Env
+.env
+
+# Static build output
+staticfiles/
+
+# OS / editors
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

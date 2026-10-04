@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Our Story — {{ brand_name }}{% endblock %}
+
+{% block content %}
+<section class="max-w-7xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
+  <div class="grid md:grid-cols-2 gap-10 items-center">
+    <div>
+      <p class="text-leaf-700 font-bold uppercase tracking-widest text-xs mb-2">Our story</p>
+      <h1 class="font-display text-4xl sm:text-5xl font-bold text-leaf-950 mb-6">Grown at home.<br>Harvested with care.</h1>
+      <p class="text-lg text-stone-600 mb-4">{{ brand_name }} started with a simple frustration: grocery store "fresh" greens that were already a week old by the time they hit the shelf.</p>
+      <p class="text-stone-600 mb-4">So we started growing microgreens at home in Houston — trays of broccoli, sunflower, pea shoots, and radish under full-spectrum lights, watered daily, and cut only when someone orders them.</p>
+      <p class="text-stone-600 mb-4">What began as a kitchen experiment turned into a neighborhood favorite. Now we grow for families, meal preppers, and local chefs across Greater Houston who can taste the difference a same-day harvest makes.</p>
+    </div>
+    <div>
+      <img src="{% static 'img/grow.jpg' %}" alt="Our home grow room in Houston" class="rounded-3xl shadow-xl w-full h-[480px] object-cover">
+    </div>
+  </div>
+
+  <div class="grid sm:grid-cols-3 gap-6 mt-16">
+    <div class="bg-white rounded-2xl border border-leaf-100 p-8">
+      <div class="text-3xl mb-3">🌱</div>
+      <h3 class="font-display text-xl font-bold mb-2">Organic, always</h3>
+      <p class="text-stone-600 text-sm">Certified organic seed, organic growing medium, filtered water. Never any pesticides, herbicides, or synthetic fertilizers.</p>
+    </div>
+    <div class="bg-white rounded-2xl border border-leaf-100 p-8">
+      <div class="text-3xl mb-3">✂️</div>
+      <h3 class="font-display text-xl font-bold mb-2">Harvested to order</h3>
+      <p class="text-stone-600 text-sm">We don't cut until you order. Your greens go from tray to bag in minutes, not days — that's the whole point.</p>
+    </div>
+    <div class="bg-white rounded-2xl border border-leaf-100 p-8">
+      <div class="text-3xl mb-3">🤝</div>
+      <h3 class="font-display text-xl font-bold mb-2">Houston proud</h3>
+      <p class="text-stone-600 text-sm">Grown, harvested, and delivered right here in Houston. Zero food miles, maximum freshness, and a local business you can actually talk to.</p>
+    </div>
+  </div>
+
+  <div class="text-center mt-16">
+    <a href="{% url 'product_list' %}" class="inline-block bg-leaf-700 hover:bg-leaf-800 text-white font-bold px-8 py-4 rounded-full text-lg transition">Taste the difference →</a>
+  </div>
+</section>
+{% endblock %}
