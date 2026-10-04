@@ -18,7 +18,8 @@ def get_or_create_stripe_coupon(order):
         amount_off=int(order.discount_amount * 100),
         currency="usd",
         duration="once",
-        name=f"Space City Sprouts {order.number} ({order.coupon_code})",
+        # Stripe coupon names are capped at 40 chars.
+        name=f"{order.coupon_code} ({order.number})"[:40],
         metadata={
             "order_number": order.number,
             "coupon_code": order.coupon_code,
