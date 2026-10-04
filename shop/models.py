@@ -4,7 +4,7 @@ from django.utils.crypto import get_random_string
 
 
 def generate_order_number():
-    return f"BCG-{timezone.now():%Y%m%d}-{get_random_string(6).upper()}"
+    return f"SCS-{timezone.now():%Y%m%d}-{get_random_string(6).upper()}"
 
 
 class Product(models.Model):
