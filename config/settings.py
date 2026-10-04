@@ -134,3 +134,8 @@ FREE_DELIVERY_MINIMUM = Decimal(os.environ.get("FREE_DELIVERY_MINIMUM", "35.00")
 STRIPE_SECRET_KEY = os.environ.get("STRIPE_SECRET_KEY", "")
 STRIPE_PUBLISHABLE_KEY = os.environ.get("STRIPE_PUBLISHABLE_KEY", "")
 STRIPE_WEBHOOK_SECRET = os.environ.get("STRIPE_WEBHOOK_SECRET", "")
+
+# ---------------------------------------------------------------------------
+# GitHub push-to-deploy webhook — shared secret for the /deploy/github/ hook.
+# ---------------------------------------------------------------------------
+GITHUB_WEBHOOK_SECRET = os.environ.get("GITHUB_WEBHOOK_SECRET", "")

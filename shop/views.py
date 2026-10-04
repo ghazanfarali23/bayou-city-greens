@@ -8,6 +8,12 @@ from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
+import hashlib
+import hmac
+import json
+import subprocess
+from pathlib import Path
+
 from .cart import (
     add_to_cart,
     cart_details,
@@ -352,4 +358,35 @@ def stripe_webhook(request):
         Subscription.objects.filter(
             stripe_subscription_id=obj.get("id")
         ).update(status="canceled")
+    return HttpResponse(status=200)
+
+
+# ---------------------------------------------------------------------------
+# GitHub push-to-deploy webhook
+# ---------------------------------------------------------------------------
+@csrf_exempt
+def github_deploy_webhook(request):
+    """Deploy on push to master. Verifies the GitHub HMAC signature, then
+    runs deploy.sh in the background so the webhook responds immediately."""
+    if request.method != "POST":
+        return HttpResponse(status=405)
+    secret = getattr(settings, "GITHUB_WEBHOOK_SECRET", "")
+    sig = request.META.get("HTTP_X_HUB_SIGNATURE_256", "")
+    if not secret or not sig:
+        return HttpResponse(status=403)
+    mac = hmac.new(secret.encode(), request.body, hashlib.sha256)
+    if not hmac.compare_digest("sha256=" + mac.hexdigest(), sig):
+        return HttpResponse(status=403)
+    try:
+        payload = json.loads(request.body)
+    except Exception:
+        return HttpResponse(status=400)
+    if payload.get("ref") == "refs/heads/master":
+        deploy_sh = Path(settings.BASE_DIR) / "deploy.sh"
+        subprocess.Popen(
+            ["/bin/bash", str(deploy_sh)],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            start_new_session=True,
+        )
     return HttpResponse(status=200)

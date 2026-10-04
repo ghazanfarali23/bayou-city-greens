@@ -22,4 +22,5 @@ urlpatterns = [
         name="subscription_confirmation",
     ),
     path("stripe/webhook/", views.stripe_webhook, name="stripe_webhook"),
+    path("deploy/github/", views.github_deploy_webhook, name="github_deploy"),
 ]
