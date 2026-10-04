@@ -1,1 +1,124 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}{{ brand_name }} — Houston-Grown Organic Microgreens{% endblock %}</title>
+  <meta name="description" content="{% block meta_description %}{{ brand_name }} grows organic microgreens at home in Houston, Texas. Harvested to order. Local pickup and delivery across Greater Houston.{% endblock %}">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            leaf: {50:'#f2f8f0',100:'#e0efdb',200:'#c3e0b8',300:'#9bca8a',400:'#6fb35c',500:'#4d9540',600:'#3a7831',700:'#2f6128',800:'#284e24',900:'#224020',950:'#0f220f'},
+            cream: '#faf7ef',
+            ink: '#1c2419',
+          },
+          fontFamily: {
+            display: ['Fraunces', 'Georgia', 'serif'],
+            body: ['Inter', 'system-ui', 'sans-serif'],
+          },
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+  {% block head_extra %}{% endblock %}
+</head>
+<body class="font-body bg-cream text-ink antialiased">
 
+  <!-- Announcement bar -->
+  <div class="bg-leaf-950 text-leaf-100 text-center text-sm py-2 px-4">
+    🌱 Harvested to order in Houston, TX · Free local delivery on orders over $35
+  </div>
+
+  <!-- Nav -->
+  <header class="sticky top-0 z-40 bg-cream/90 backdrop-blur border-b border-leaf-200/60">
+    <nav class="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between h-16">
+      <a href="{% url 'home' %}" class="flex items-center gap-2">
+        <span class="w-9 h-9 rounded-full bg-leaf-600 flex items-center justify-center text-white text-xl">🌱</span>
+        <span class="font-display font-700 text-xl font-bold text-leaf-950">{{ brand_name }}</span>
+      </a>
+      <div class="hidden md:flex items-center gap-8 text-[15px] font-medium">
+        <a href="{% url 'home' %}" class="hover:text-leaf-700">Home</a>
+        <a href="{% url 'product_list' %}" class="hover:text-leaf-700">Shop</a>
+        <a href="{% url 'about' %}" class="hover:text-leaf-700">Our Story</a>
+        <a href="{% url 'faq' %}" class="hover:text-leaf-700">FAQ</a>
+        <a href="{% url 'contact' %}" class="hover:text-leaf-700">Contact</a>
+      </div>
+      <div class="flex items-center gap-3">
+        <a href="{% url 'cart_detail' %}" class="relative inline-flex items-center gap-2 bg-leaf-700 hover:bg-leaf-800 text-white font-semibold px-4 py-2 rounded-full transition">
+          🛒 Cart
+          {% if cart_count %}<span class="absolute -top-2 -right-2 bg-amber-400 text-ink text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center">{{ cart_count }}</span>{% endif %}
+        </a>
+      </div>
+    </nav>
+    <!-- Mobile nav -->
+    <div class="md:hidden border-t border-leaf-200/60">
+      <div class="max-w-7xl mx-auto px-4 py-2 flex gap-5 text-sm font-medium overflow-x-auto">
+        <a href="{% url 'home' %}" class="hover:text-leaf-700 whitespace-nowrap">Home</a>
+        <a href="{% url 'product_list' %}" class="hover:text-leaf-700 whitespace-nowrap">Shop</a>
+        <a href="{% url 'about' %}" class="hover:text-leaf-700 whitespace-nowrap">Our Story</a>
+        <a href="{% url 'faq' %}" class="hover:text-leaf-700 whitespace-nowrap">FAQ</a>
+        <a href="{% url 'contact' %}" class="hover:text-leaf-700 whitespace-nowrap">Contact</a>
+      </div>
+    </div>
+  </header>
+
+  {% if messages %}
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 mt-4 space-y-2">
+    {% for message in messages %}
+    <div class="rounded-xl px-4 py-3 text-sm font-medium {% if message.tags == 'success' %}bg-leaf-100 text-leaf-900 border border-leaf-300{% elif message.tags == 'error' %}bg-red-50 text-red-900 border border-red-200{% else %}bg-amber-50 text-amber-900 border border-amber-200{% endif %}">
+      {{ message }}
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="bg-leaf-950 text-leaf-100 mt-20">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-14 grid gap-10 md:grid-cols-4">
+      <div class="md:col-span-2">
+        <div class="flex items-center gap-2 mb-3">
+          <span class="w-9 h-9 rounded-full bg-leaf-600 flex items-center justify-center text-white text-xl">🌱</span>
+          <span class="font-display text-xl font-bold">{{ brand_name }}</span>
+        </div>
+        <p class="text-leaf-200/80 max-w-sm">{{ brand_tagline }} Grown indoors, without pesticides, and cut fresh the day you get them.</p>
+      </div>
+      <div>
+        <h4 class="font-semibold mb-3 text-leaf-100">Shop</h4>
+        <ul class="space-y-2 text-leaf-200/80">
+          <li><a href="{% url 'product_list' %}" class="hover:text-white">All greens</a></li>
+          <li><a href="{% url 'faq' %}" class="hover:text-white">Pickup & delivery</a></li>
+          <li><a href="{% url 'contact' %}" class="hover:text-white">Wholesale inquiries</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="font-semibold mb-3 text-leaf-100">Get in touch</h4>
+        <ul class="space-y-2 text-leaf-200/80">
+          <li>📍 {{ service_area }}</li>
+          <li>✉️ <a href="mailto:{{ contact_email }}" class="hover:text-white">{{ contact_email }}</a></li>
+          {% if contact_phone %}<li>📞 {{ contact_phone }}</li>{% endif %}
+          <li>🛍️ Pickup: {{ pickup_address }}</li>
+        </ul>
+      </div>
+    </div>
+    <div class="border-t border-leaf-900">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 py-5 text-sm text-leaf-200/60 flex flex-col sm:flex-row justify-between gap-2">
+        <span>© {% now "Y" %} {{ brand_name }}. Grown with care in Houston, Texas.</span>
+        <span>100% organic · Pesticide-free · Harvested to order</span>
+      </div>
+    </div>
+  </footer>
+
+  {% block scripts %}{% endblock %}
+</body>
+</html>

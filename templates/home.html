@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<!-- Hero -->
+<section class="relative overflow-hidden">
+  <img src="{% static 'img/hero.jpg' %}" alt="Trays of fresh microgreens" class="absolute inset-0 w-full h-full object-cover">
+  <div class="absolute inset-0 hero-overlay"></div>
+  <div class="relative max-w-7xl mx-auto px-4 sm:px-6 py-24 sm:py-36">
+    <div class="max-w-2xl">
+      <span class="inline-block bg-leaf-100/90 text-leaf-900 text-xs font-bold uppercase tracking-widest px-3 py-1.5 rounded-full mb-5">Houston · Homegrown · Organic</span>
+      <h1 class="font-display text-4xl sm:text-6xl font-bold text-white leading-tight drop-shadow-lg">
+        The freshest greens in Houston, cut <em class="not-italic text-lime-300">to order</em>.
+      </h1>
+      <p class="mt-5 text-lg text-white/90 max-w-xl drop-shadow">
+        We grow organic microgreens right here at home — no pesticides, no food miles, no week-old grocery store clamshells. Harvested the morning you get them.
+      </p>
+      <div class="mt-8 flex flex-wrap gap-4">
+        <a href="{% url 'product_list' %}" class="bg-leaf-500 hover:bg-leaf-400 text-leaf-950 font-bold px-7 py-3.5 rounded-full text-lg transition shadow-lg">Shop fresh greens →</a>
+        <a href="{% url 'about' %}" class="bg-white/15 hover:bg-white/25 backdrop-blur text-white font-semibold px-7 py-3.5 rounded-full text-lg transition border border-white/40">Our story</a>
+      </div>
+      <div class="mt-8 flex flex-wrap gap-x-6 gap-y-2 text-white/85 text-sm font-medium">
+        <span>✅ 100% organic seed</span>
+        <span>✅ Zero pesticides</span>
+        <span>✅ Same-day harvest</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Trust strip -->
+<section class="bg-leaf-950 text-leaf-100">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 py-6 grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+    <div><div class="text-2xl mb-1">🌿</div><div class="font-semibold text-sm">Up to 40x the nutrients<br>of mature greens</div></div>
+    <div><div class="text-2xl mb-1">🏠</div><div class="font-semibold text-sm">Grown indoors at home<br>in Houston, TX</div></div>
+    <div><div class="text-2xl mb-1">✂️</div><div class="font-semibold text-sm">Cut fresh on harvest day<br>— never stored</div></div>
+    <div><div class="text-2xl mb-1">🚗</div><div class="font-semibold text-sm">Local pickup & delivery<br>across Houston</div></div>
+  </div>
+</section>
+
+<!-- Featured products -->
+<section class="max-w-7xl mx-auto px-4 sm:px-6 py-16 sm:py-20">
+  <div class="flex items-end justify-between mb-8">
+    <div>
+      <p class="text-leaf-700 font-bold uppercase tracking-widest text-xs mb-2">This week's harvest</p>
+      <h2 class="font-display text-3xl sm:text-4xl font-bold text-leaf-950">Fresh from the grow room</h2>
+    </div>
+    <a href="{% url 'product_list' %}" class="hidden sm:inline-block font-semibold text-leaf-700 hover:text-leaf-900">View all →</a>
+  </div>
+  <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+    {% for product in featured %}
+    <div class="product-card bg-white rounded-2xl overflow-hidden shadow-sm border border-leaf-100">
+      <a href="{% url 'product_detail' product.slug %}">
+        <img src="{% static product.image %}" alt="{{ product.name }} microgreens" class="w-full h-56 object-cover">
+      </a>
+      <div class="p-5">
+        <div class="flex items-start justify-between gap-3">
+          <div>
+            <h3 class="font-display text-xl font-bold"><a href="{% url 'product_detail' product.slug %}" class="hover:text-leaf-700">{{ product.name }}</a></h3>
+            <p class="text-sm text-stone-500 mt-0.5">{{ product.unit }}</p>
+          </div>
+          <span class="font-display text-xl font-bold text-leaf-800 whitespace-nowrap">${{ product.price }}</span>
+        </div>
+        <p class="text-sm text-stone-600 mt-2 line-clamp-2">{{ product.tagline }}</p>
+        <form method="post" action="{% url 'cart_add' product.pk %}" class="mt-4">
+          {% csrf_token %}
+          <input type="hidden" name="next" value="{% url 'home' %}">
+          <button class="w-full bg-leaf-700 hover:bg-leaf-800 text-white font-semibold py-2.5 rounded-xl transition">Add to cart</button>
+        </form>
+      </div>
+    </div>
+    {% empty %}
+    <p class="text-stone-500">Products are being planted — check back soon!</p>
+    {% endfor %}
+  </div>
+  <div class="sm:hidden mt-6 text-center">
+    <a href="{% url 'product_list' %}" class="font-semibold text-leaf-700">View all greens →</a>
+  </div>
+</section>
+
+<!-- How it works -->
+<section class="bg-leaf-50 border-y border-leaf-100">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 py-16 sm:py-20">
+    <p class="text-leaf-700 font-bold uppercase tracking-widest text-xs mb-2 text-center">How it works</p>
+    <h2 class="font-display text-3xl sm:text-4xl font-bold text-leaf-950 text-center mb-12">From our trays to your table</h2>
+    <div class="grid md:grid-cols-3 gap-8">
+      <div class="text-center">
+        <div class="w-16 h-16 mx-auto rounded-2xl bg-leaf-600 text-white text-3xl flex items-center justify-center mb-4">🛒</div>
+        <h3 class="font-display text-xl font-bold mb-2">1. You order</h3>
+        <p class="text-stone-600">Pick your greens online and choose pickup or local delivery anywhere in Greater Houston.</p>
+      </div>
+      <div class="text-center">
+        <div class="w-16 h-16 mx-auto rounded-2xl bg-leaf-600 text-white text-3xl flex items-center justify-center mb-4">✂️</div>
+        <h3 class="font-display text-xl font-bold mb-2">2. We harvest</h3>
+        <p class="text-stone-600">Your greens are cut fresh the morning of your pickup or delivery day — never before.</p>
+      </div>
+      <div class="text-center">
+        <div class="w-16 h-16 mx-auto rounded-2xl bg-leaf-600 text-white text-3xl flex items-center justify-center mb-4">🥗</div>
+        <h3 class="font-display text-xl font-bold mb-2">3. You enjoy</h3>
+        <p class="text-stone-600">Peak freshness, peak nutrition. Most greens stay crisp for 7–10 days refrigerated.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Why microgreens -->
+<section class="max-w-7xl mx-auto px-4 sm:px-6 py-16 sm:py-20 grid md:grid-cols-2 gap-10 items-center">
+  <div>
+    <img src="{% static 'img/grow.jpg' %}" alt="Our home grow room" class="rounded-3xl shadow-xl w-full h-96 object-cover">
+  </div>
+  <div>
+    <p class="text-leaf-700 font-bold uppercase tracking-widest text-xs mb-2">Why microgreens?</p>
+    <h2 class="font-display text-3xl sm:text-4xl font-bold text-leaf-950 mb-5">Tiny greens.<br>Serious nutrition.</h2>
+    <p class="text-stone-600 mb-4">Microgreens are young vegetable greens harvested just after their first leaves develop. Research shows they can contain dramatically higher concentrations of vitamins and antioxidants than their full-grown counterparts.</p>
+    <ul class="space-y-3 text-stone-700">
+      <li class="flex gap-3"><span class="text-leaf-600 font-bold">✓</span> Vitamins A, C, E, and K in every bite</li>
+      <li class="flex gap-3"><span class="text-leaf-600 font-bold">✓</span> Grown from organic seed in organic medium</li>
+      <li class="flex gap-3"><span class="text-leaf-600 font-bold">✓</span> No pesticides, no herbicides — ever</li>
+      <li class="flex gap-3"><span class="text-leaf-600 font-bold">✓</span> Zero food miles: grown and eaten in Houston</li>
+    </ul>
+    <a href="{% url 'about' %}" class="inline-block mt-6 font-semibold text-leaf-700 hover:text-leaf-900">Read our story →</a>
+  </div>
+</section>
+
+<!-- Service area CTA -->
+<section class="max-w-7xl mx-auto px-4 sm:px-6 pb-4">
+  <div class="rounded-3xl bg-leaf-800 text-white px-8 py-12 sm:px-14 sm:py-16 relative overflow-hidden">
+    <div class="absolute -right-10 -top-10 text-[12rem] opacity-10 select-none">🌱</div>
+    <div class="relative max-w-2xl">
+      <h2 class="font-display text-3xl sm:text-4xl font-bold mb-4">Houston, let's eat fresher.</h2>
+      <p class="text-leaf-100/90 mb-8">Local pickup is always free. Home delivery across Greater Houston — free on orders over $35.</p>
+      <a href="{% url 'product_list' %}" class="bg-white text-leaf-900 font-bold px-7 py-3.5 rounded-full text-lg hover:bg-leaf-100 transition">Start your order →</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

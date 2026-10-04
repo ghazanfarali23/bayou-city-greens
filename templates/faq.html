@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}FAQ — {{ brand_name }}{% endblock %}
+
+{% block content %}
+<section class="max-w-3xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
+  <p class="text-leaf-700 font-bold uppercase tracking-widest text-xs mb-2">FAQ</p>
+  <h1 class="font-display text-3xl sm:text-5xl font-bold text-leaf-950 mb-10">Questions, answered</h1>
+
+  <div class="space-y-4">
+    <details class="faq-item bg-white rounded-2xl border border-leaf-100 p-6">
+      <summary class="font-bold cursor-pointer">Where do you deliver?</summary>
+      <p class="text-stone-600 mt-3 text-sm leading-relaxed">We deliver across {{ service_area }}. Delivery is $4.95, and free on orders over $35. If you're outside our area, choose pickup or <a href="{% url 'contact' %}" class="text-leaf-700 font-semibold">contact us</a> — we're expanding.</p>
+    </details>
+    <details class="faq-item bg-white rounded-2xl border border-leaf-100 p-6">
+      <summary class="font-bold cursor-pointer">How does pickup work?</summary>
+      <p class="text-stone-600 mt-3 text-sm leading-relaxed">Choose pickup at checkout and pick a preferred day. We'll confirm your pickup window by email or text, then share the exact address. Pickup is always free.</p>
+    </details>
+    <details class="faq-item bg-white rounded-2xl border border-leaf-100 p-6">
+      <summary class="font-bold cursor-pointer">When are the greens harvested?</summary>
+      <p class="text-stone-600 mt-3 text-sm leading-relaxed">The morning of your pickup or delivery day — never before. That's why we ask for a preferred day at least 2 days out: it lets us time the harvest perfectly.</p>
+    </details>
+    <details class="faq-item bg-white rounded-2xl border border-leaf-100 p-6">
+      <summary class="font-bold cursor-pointer">How long do microgreens stay fresh?</summary>
+      <p class="text-stone-600 mt-3 text-sm leading-relaxed">Because they're harvested to order, our greens typically stay crisp 7–10 days refrigerated. Keep them in their clamshell, unwashed, and rinse just before eating.</p>
+    </details>
+    <details class="faq-item bg-white rounded-2xl border border-leaf-100 p-6">
+      <summary class="font-bold cursor-pointer">Are your greens really organic?</summary>
+      <p class="text-stone-600 mt-3 text-sm leading-relaxed">Yes. We grow from organic seed in organic growing medium with filtered water — no pesticides, herbicides, or synthetic fertilizers, ever.</p>
+    </details>
+    <details class="faq-item bg-white rounded-2xl border border-leaf-100 p-6">
+      <summary class="font-bold cursor-pointer">Do you offer subscriptions or wholesale?</summary>
+      <p class="text-stone-600 mt-3 text-sm leading-relaxed">The Weekly Harvest Box is our most popular repeat order. For restaurants, juice bars, or meal-prep businesses needing regular supply, <a href="{% url 'contact' %}" class="text-leaf-700 font-semibold">get in touch</a> — we offer wholesale pricing.</p>
+    </details>
+    <details class="faq-item bg-white rounded-2xl border border-leaf-100 p-6">
+      <summary class="font-bold cursor-pointer">How do I pay?</summary>
+      <p class="text-stone-600 mt-3 text-sm leading-relaxed">Secure online card payment at checkout. If online payment isn't enabled yet, you can pay by card, cash, or tap on pickup/delivery — your order is still reserved.</p>
+    </details>
+  </div>
+</section>
+{% endblock %}
