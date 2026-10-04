@@ -16,7 +16,7 @@ PRODUCTS = [
             "Cut fresh the morning of your pickup or delivery."
         ),
         "nutrition": "Rich in vitamins A, C, and K, plus sulforaphane — the compound broccoli is famous for.",
-        "price": Decimal("8.00"),
+        "price": Decimal("14.99"),
         "unit": "2 oz clamshell",
         "category": "Mild",
         "image": "img/products/broccoli.jpg",
@@ -33,7 +33,7 @@ PRODUCTS = [
             "as a snack, on tacos, or piled on avocado toast."
         ),
         "nutrition": "High in protein, healthy fats, vitamin E, and zinc for their size.",
-        "price": Decimal("9.00"),
+        "price": Decimal("14.99"),
         "unit": "2 oz clamshell",
         "category": "Mild",
         "image": "img/products/sunflower.jpg",
@@ -50,7 +50,7 @@ PRODUCTS = [
             "box. Kids love them."
         ),
         "nutrition": "Loaded with vitamins A and C, folate, and plant protein.",
-        "price": Decimal("9.00"),
+        "price": Decimal("14.99"),
         "unit": "2 oz clamshell",
         "category": "Mild",
         "image": "img/products/pea-shoots.jpg",
@@ -66,7 +66,7 @@ PRODUCTS = [
             "The perfect way to wake up eggs, ramen, grain bowls, and sandwiches."
         ),
         "nutrition": "High in vitamin C and antioxidants; the color comes from anthocyanins.",
-        "price": Decimal("8.00"),
+        "price": Decimal("14.99"),
         "unit": "2 oz clamshell",
         "category": "Spicy",
         "image": "img/products/radish.jpg",
@@ -82,7 +82,7 @@ PRODUCTS = [
             "Mild and balanced with gorgeous color — the easiest way to upgrade any salad."
         ),
         "nutrition": "A broad spectrum of vitamins A, C, K, and antioxidants from four varieties.",
-        "price": Decimal("10.00"),
+        "price": Decimal("14.99"),
         "unit": "2 oz clamshell",
         "category": "Mixes",
         "image": "img/products/salad-mix.jpg",
@@ -98,7 +98,7 @@ PRODUCTS = [
             "wasabi-like punch to tacos, pho, burgers, and anything that needs waking up."
         ),
         "nutrition": "Mustard greens bring vitamins K and A plus the signature sinus-clearing kick.",
-        "price": Decimal("10.00"),
+        "price": Decimal("14.99"),
         "unit": "2 oz clamshell",
         "category": "Mixes",
         "image": "img/products/spicy-mix.jpg",
@@ -116,7 +116,7 @@ PRODUCTS = [
             "a Tuesday harvest."
         ),
         "nutrition": "A full week of concentrated greens nutrition across 4+ varieties.",
-        "price": Decimal("29.00"),
+        "price": Decimal("39.99"),
         "unit": "4 x 2 oz clamshells",
         "category": "Bundles",
         "image": "img/products/harvest-box.jpg",

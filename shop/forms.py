@@ -1,6 +1,10 @@
 from django import forms
 from django.conf import settings
 
+import datetime
+
+HARVEST_LEAD_DAYS = 7
+
 
 class CheckoutForm(forms.Form):
     FULFILLMENT_CHOICES = [
@@ -29,13 +33,25 @@ class CheckoutForm(forms.Form):
         required=False,
         label="Preferred pickup / delivery day",
         widget=forms.DateInput(attrs={"type": "date"}),
-        help_text="We harvest to order — pick a day at least 2 days out.",
+        help_text="We harvest to order — pick a day at least 7 days out.",
     )
     notes = forms.CharField(
         required=False,
         label="Notes (optional)",
         widget=forms.Textarea(attrs={"rows": 3}),
     )
+
+    def clean_delivery_date(self):
+        date = self.cleaned_data.get("delivery_date")
+        if date:
+            min_date = datetime.date.today() + datetime.timedelta(
+                days=HARVEST_LEAD_DAYS
+            )
+            if date < min_date:
+                raise forms.ValidationError(
+                    "Please pick a day at least 7 days out — we harvest to order."
+                )
+        return date
 
     def clean(self):
         cleaned = super().clean()
